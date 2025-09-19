@@ -38,12 +38,12 @@ public class Band5RadioBlock extends Block implements ISubscriberRadio {
             player.sendSystemMessage(Component.literal("Tuning... "));
             if(stack.isEmpty())
             {
-                List<String> messages = RadioSpec.receive(sl,pos,5,player.isCrouching());
+                List<String> messages = RadioSpec.receive(sl,pos,5,player.isCrouching(),List.of());
                 messages.forEach(a->player.sendSystemMessage(Component.literal(a)));
             }
             else
             {
-                RadioSpec.transmit(sl,pos,5,stack.getDisplayName().getString());
+                RadioSpec.transmit(sl,pos,5,stack.getDisplayName().getString(),"");
             }
         }
         return super.use(p_60503_, level, pos, player, hand, p_60508_);

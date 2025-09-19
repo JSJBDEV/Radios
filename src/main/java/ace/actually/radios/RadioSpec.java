@@ -57,7 +57,7 @@ public class RadioSpec {
      * @param message qed
      * @return the index in RADIOS of this radio
      */
-    public static int transmit(ServerLevel level, BlockPos pos, int band,String message)
+    public static int transmit(ServerLevel level, BlockPos pos, int band,String message,String passphrase)
     {
         load(level.getServer());
         for(int i = 0; i < RADIOS.size(); i++) {
@@ -68,6 +68,7 @@ public class RadioSpec {
                 if(v[0]==pos.getX() && v[1]==pos.getY() && v[2]==pos.getZ())
                 {
                     radio.putString("message",message);
+                    radio.putString("passphrase",passphrase);
                     RADIOS.set(i,radio);
                     if(radio.contains("subscribers"))
                     {
@@ -91,6 +92,7 @@ public class RadioSpec {
         radio.putIntArray("pos",new int[]{pos.getX(),pos.getY(),pos.getZ()});
         radio.putInt("band",band);
         radio.putString("message",message);
+        radio.putString("passphrase",passphrase);
         RADIOS.add(radio);
         runStaticRadioActions(level, pos, band, message);
         save(level.getServer());
@@ -184,7 +186,7 @@ public class RadioSpec {
      * @param shouldSubscribe qed
      * @return a list of all the receivable transmissions on this band at this location
      */
-    public static List<String> receive(ServerLevel receiverLevel, BlockPos receiverPos, int band, boolean shouldSubscribe)
+    public static List<String> receive(ServerLevel receiverLevel, BlockPos receiverPos, int band, boolean shouldSubscribe, List<String> passphrases)
     {
         load(receiverLevel.getServer());
         String receiverDimString = receiverLevel.dimension().location().toString();
@@ -196,35 +198,44 @@ public class RadioSpec {
             BlockPos bp = new BlockPos(ia[0],ia[1],ia[2]);
             if(inRadioDistance(receiverDimString,receiverPos,radio.getString("dimension"),bp,band))
             {
-                messages.add(radio.getString("message"));
-                if(shouldSubscribe)
+                String passphrase = radio.getString("passphrase");
+                if(passphrase.isEmpty() && passphrases.contains(passphrase))
                 {
-                    ListTag subs = radio.getList("subscribers",ListTag.TAG_COMPOUND);
-                    boolean exists = false;
+                    messages.add(radio.getString("message"));
+                    if(shouldSubscribe)
+                    {
+                        ListTag subs = radio.getList("subscribers",ListTag.TAG_COMPOUND);
+                        boolean exists = false;
 
-                    //we first check if this block exists as a subscriber already
-                    for (int j = 0; j < subs.size(); j++) {
-                        CompoundTag sub = subs.getCompound(i);
-                        if(sub.getString("dimension").equals(receiverDimString))
-                        {
-                            int[] w = sub.getIntArray("pos");
-                            if(w[0]==receiverPos.getX() && w[1]==receiverPos.getY() && w[2]==receiverPos.getZ())
+                        //we first check if this block exists as a subscriber already
+                        for (int j = 0; j < subs.size(); j++) {
+                            CompoundTag sub = subs.getCompound(i);
+                            if(sub.getString("dimension").equals(receiverDimString))
                             {
-                                exists = true;
-                                break;
+                                int[] w = sub.getIntArray("pos");
+                                if(w[0]==receiverPos.getX() && w[1]==receiverPos.getY() && w[2]==receiverPos.getZ())
+                                {
+                                    exists = true;
+                                    break;
+                                }
                             }
                         }
-                    }
-                    if(!exists)
-                    {
-                        CompoundTag subscriber = new CompoundTag();
-                        subscriber.putString("dimension",receiverLevel.dimension().location().toString());
-                        subscriber.putIntArray("pos", new int[]{receiverPos.getX(),receiverPos.getY(),receiverPos.getZ()});
-                        subs.add(subscriber);
-                        radio.put("subscribers",subs);
-                        RADIOS.set(i,radio);
+                        if(!exists)
+                        {
+                            CompoundTag subscriber = new CompoundTag();
+                            subscriber.putString("dimension",receiverLevel.dimension().location().toString());
+                            subscriber.putIntArray("pos", new int[]{receiverPos.getX(),receiverPos.getY(),receiverPos.getZ()});
+                            subs.add(subscriber);
+                            radio.put("subscribers",subs);
+                            RADIOS.set(i,radio);
+                        }
                     }
                 }
+                else
+                {
+                    messages.add("[You receive an incomprehensible signal]");
+                }
+
             }
         }
         save(receiverLevel.getServer());
