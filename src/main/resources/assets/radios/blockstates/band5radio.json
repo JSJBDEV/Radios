@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "radios:block/band5radio"
+    }
+  }
+}
