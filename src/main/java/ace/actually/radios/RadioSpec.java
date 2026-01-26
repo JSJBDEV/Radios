@@ -198,6 +198,10 @@ public class RadioSpec {
             BlockPos bp = new BlockPos(ia[0],ia[1],ia[2]);
             if(inRadioDistance(receiverDimString,receiverPos,radio.getString("dimension"),bp,band))
             {
+                if (radio.getString("message").isBlank()) {
+                    continue;
+                }
+
                 String passphrase = radio.getString("passphrase");
                 if(passphrase.isEmpty() || passphrases.contains(passphrase))
                 {
