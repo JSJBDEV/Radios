@@ -186,7 +186,7 @@ public class RadioSpec {
      * @param shouldSubscribe qed
      * @return a list of all the receivable transmissions on this band at this location
      */
-    public static List<String> receive(ServerLevel receiverLevel, BlockPos receiverPos, int band, boolean shouldSubscribe, List<String> passphrases)
+    public static List<RadioSignal> receive(ServerLevel receiverLevel, BlockPos receiverPos, int band, boolean shouldSubscribe, List<String> passphrases)
     {
         load(receiverLevel.getServer());
         String receiverDimString = receiverLevel.dimension().location().toString();
@@ -239,7 +239,7 @@ public class RadioSpec {
             }
         }
         save(receiverLevel.getServer());
-        return messages;
+        return messages.stream().map(message -> new RadioSignal(message, 1.0)).toList(); //TODO implement proper signal strength calculation
     }
 
     /**

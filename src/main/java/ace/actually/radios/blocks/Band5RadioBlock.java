@@ -1,6 +1,7 @@
 package ace.actually.radios.blocks;
 
 import ace.actually.radios.ISubscriberRadio;
+import ace.actually.radios.RadioSignal;
 import ace.actually.radios.RadioSpec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -38,8 +39,8 @@ public class Band5RadioBlock extends Block implements ISubscriberRadio {
             player.sendSystemMessage(Component.literal("Tuning... "));
             if(stack.isEmpty())
             {
-                List<String> messages = RadioSpec.receive(sl,pos,5,player.isCrouching(),List.of());
-                messages.forEach(a->player.sendSystemMessage(Component.literal(a)));
+                List<RadioSignal> messages = RadioSpec.receive(sl,pos,5,player.isCrouching(),List.of());
+                messages.forEach(a->player.sendSystemMessage(Component.literal(a.message())));
             }
             else
             {
