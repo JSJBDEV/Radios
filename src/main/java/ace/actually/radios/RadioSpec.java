@@ -199,7 +199,7 @@ public class RadioSpec {
             if(inRadioDistance(receiverDimString,receiverPos,radio.getString("dimension"),bp,band))
             {
                 String passphrase = radio.getString("passphrase");
-                if(passphrase.isEmpty() && passphrases.contains(passphrase))
+                if(passphrase.isEmpty() || passphrases.contains(passphrase))
                 {
                     messages.add(radio.getString("message"));
                     if(shouldSubscribe)
