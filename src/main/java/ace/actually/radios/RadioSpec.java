@@ -69,6 +69,7 @@ public class RadioSpec {
                 {
                     radio.putString("message",message);
                     radio.putString("passphrase",passphrase);
+                    radio.putInt("band",band);
                     RADIOS.set(i,radio);
                     if(radio.contains("subscribers"))
                     {
@@ -196,7 +197,7 @@ public class RadioSpec {
             CompoundTag radio = RADIOS.getCompound(i);
             int[] ia = radio.getIntArray("pos");
             BlockPos bp = new BlockPos(ia[0],ia[1],ia[2]);
-            if(inRadioDistance(receiverDimString,receiverPos,radio.getString("dimension"),bp,band))
+            if(radio.getInt("band") == band && inRadioDistance(receiverDimString,receiverPos,radio.getString("dimension"),bp,band))
             {
                 if (radio.getString("message").isBlank()) {
                     continue;
