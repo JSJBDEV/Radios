@@ -50,6 +50,16 @@ public class Band5RadioBlock extends Block implements ISubscriberRadio {
         return super.use(p_60503_, level, pos, player, hand, p_60508_);
     }
 
+    @SuppressWarnings("deprecation")
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
+        super.onRemove(state, level, pos, newState, moved);
+        if(level instanceof ServerLevel sl) {
+            // clear message on remove
+            RadioSpec.transmit(sl, pos, 5, "", "");
+        }
+    }
+
     @Override
     public void processReceivedMessage(ServerLevel receiverLevel, BlockPos receiverPos, String message) {
 
