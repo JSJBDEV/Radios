@@ -2,17 +2,15 @@ package ace.actually.radios;
 
 import ace.actually.radios.api.RadioSpec;
 import ace.actually.radios.blocks.Band5RadioBlock;
-import ace.actually.radios.impl.RadioStorageImpl;
+import ace.actually.radios.impl.RadioStorage;
 import com.mojang.logging.LogUtils;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -45,7 +43,7 @@ public class Radios
 
     // Creates a new food item with the id "examplemod:example_id", nutrition 1 and saturation 2
 
-    private static final RadioStorageImpl RADIO_STORAGE = new RadioStorageImpl();
+    private static final RadioStorage RADIO_STORAGE = new RadioStorage();
 
 
     public Radios(FMLJavaModLoadingContext context)
