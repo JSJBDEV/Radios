@@ -19,16 +19,6 @@ public class MockRadioStorage implements RadioStorage {
     private final Map<String, BlockPos> dimensionLocations = new HashMap<>();
 
     @Override
-    public void load() {
-        // No-op for mock - data is already in memory
-    }
-
-    @Override
-    public void save() {
-        // No-op for mock - data stays in memory
-    }
-
-    @Override
     public List<RadioTransmitterModel> getTransmitters() {
         return transmitters;
     }

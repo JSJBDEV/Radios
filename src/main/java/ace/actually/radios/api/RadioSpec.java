@@ -36,9 +36,7 @@ public class RadioSpec {
     private static final int CROSS_DIMENSION_MULTIPLIER = 16;
 
     public static void registerDimensionPhysicalLocation(ServerLevel level, int x, int y, int z) {
-        storage.load();
         storage.setDimensionLocation(level.dimension().location().toString(), new BlockPos(x, y, z));
-        storage.save();
     }
 
     /**
@@ -51,7 +49,6 @@ public class RadioSpec {
      * @return the index in RADIOS of this radio
      */
     public static int transmit(ServerLevel level, BlockPos pos, int band, String message, String passphrase) {
-        storage.load();
         String dimensionString = level.dimension().location().toString();
 
         // Try to find existing transmitter at this location
@@ -74,7 +71,6 @@ public class RadioSpec {
             }
 
             runStaticRadioActions(level, pos, band, message);
-            storage.save();
 
             // Return the index of this transmitter
             return storage.getTransmitters().indexOf(existingTransmitter);
@@ -86,7 +82,6 @@ public class RadioSpec {
             storage.addTransmitter(newTransmitter);
 
             runStaticRadioActions(level, pos, band, message);
-            storage.save();
 
             return storage.getTransmitters().size() - 1;
         }
@@ -169,7 +164,6 @@ public class RadioSpec {
      */
     public static List<RadioSignal> receive(ServerLevel receiverLevel, BlockPos receiverPos, int band,
                                            boolean shouldSubscribe, List<String> passphrases) {
-        storage.load();
         String receiverDimString = receiverLevel.dimension().location().toString();
 
         List<String> messages = new ArrayList<>();
@@ -202,7 +196,6 @@ public class RadioSpec {
             }
         }
 
-        storage.save();
         return messages.stream().map(message -> new RadioSignal(message, 1.0)).toList(); //TODO implement proper signal strength calculation
     }
 

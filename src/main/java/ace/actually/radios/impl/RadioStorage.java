@@ -12,16 +12,6 @@ import java.util.Map;
 public interface RadioStorage {
 
     /**
-     * Load radio data from persistent storage
-     */
-    void load();
-
-    /**
-     * Save radio data to persistent storage
-     */
-    void save();
-
-    /**
      * Get all transmitters
      */
     List<RadioTransmitterModel> getTransmitters();

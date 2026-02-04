@@ -5,11 +5,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,15 +18,12 @@ import java.util.Map;
  * Owns all interaction with MinecraftServer and CommandStorage.
  * Delegates per-object serialization to model classes.
  */
-@Mod.EventBusSubscriber
 public class RadioStorageImpl implements RadioStorage {
     private static final ResourceLocation RADIO_SAVE = ResourceLocation.fromNamespaceAndPath("radios", "radios");
 
     private final List<RadioTransmitterModel> transmitters;
     private final Map<String, BlockPos> dimensionLocations;
 
-    // Don't require MinecraftServer as method argument in save/load so that we can test RadioSpec without a server available
-    private static @Nullable MinecraftServer server = null;
     private static final Logger LOGGER = LoggerFactory.getLogger("Radio Storage");
 
     public RadioStorageImpl() {
@@ -39,26 +31,11 @@ public class RadioStorageImpl implements RadioStorage {
         this.dimensionLocations = new HashMap<>();
     }
 
-    @SubscribeEvent
-    public static void onServerStarting(ServerStartingEvent event) {
-        server = event.getServer();
-    }
-
-    @SubscribeEvent
-    public static void onServerStoppedEvent(ServerStoppedEvent event) {
-        server = null;
-    }
-
     /**
      * Load radio data from server storage
      */
-    public void load() {
-        final MinecraftServer nonNullServer = server;
-        if (nonNullServer == null) {
-            LOGGER.warn("tried to load radios while server is null");
-            return;
-        }
-        CompoundTag savedRadios = nonNullServer.getCommandStorage().get(RADIO_SAVE);
+    public void load(MinecraftServer server) {
+        CompoundTag savedRadios = server.getCommandStorage().get(RADIO_SAVE);
 
         // Load transmitters
         ListTag radiosList = savedRadios.getList("radios", ListTag.TAG_COMPOUND);
@@ -80,12 +57,7 @@ public class RadioStorageImpl implements RadioStorage {
     /**
      * Save radio data to server storage
      */
-    public void save() {
-        final MinecraftServer nonNullServer = server;
-        if (nonNullServer == null) {
-            LOGGER.warn("tried to save radios while server is null");
-            return;
-        }
+    public void save(MinecraftServer server) {
         CompoundTag savedRadios = new CompoundTag();
 
         // Save transmitters
@@ -103,7 +75,7 @@ public class RadioStorageImpl implements RadioStorage {
         }
         savedRadios.put("dimensions", dimensionsTag);
 
-        nonNullServer.getCommandStorage().set(RADIO_SAVE, savedRadios);
+        server.getCommandStorage().set(RADIO_SAVE, savedRadios);
     }
 
     /**
