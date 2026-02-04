@@ -25,11 +25,13 @@ public class Band5RadioBlock extends Block implements ISubscriberRadio {
         super(p_49795_);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getShape(BlockState p_60555_, BlockGetter p_60556_, BlockPos p_60557_, CollisionContext p_60558_) {
         return Block.box(5,0,2,11,8,14);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public InteractionResult use(BlockState p_60503_, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult p_60508_) {
 

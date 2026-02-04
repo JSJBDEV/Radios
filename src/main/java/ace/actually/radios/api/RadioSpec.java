@@ -8,6 +8,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
@@ -139,17 +140,22 @@ public class RadioSpec {
      * @return qed
      */
     public static boolean inRadioDistance(String dimString1, BlockPos pos1, String dimString2, BlockPos pos2, int band) {
+        double maxDistance = getMaxRangeForAnySignal(band);
+        return getRadioDistance(dimString1, pos1, dimString2, pos2, band) <= maxDistance;
+    }
+
+    private static double getRadioDistance(String dimString1, BlockPos pos1, String dimString2, BlockPos pos2, int band) {
         if (dimString1.equals(dimString2)) {
-            return pos1.distSqr(pos2) < Math.pow(band, 8);
+            return Math.sqrt(pos1.distSqr(pos2));
         } else {
             if (storage.hasDimensionLocation(dimString1) && storage.hasDimensionLocation(dimString2)) {
                 BlockPos bp1 = storage.getDimensionLocation(dimString1);
                 BlockPos bp2 = storage.getDimensionLocation(dimString2);
-                double distance = bp1.distSqr(bp2) * CROSS_DIMENSION_MULTIPLIER;
-                return (pos1.distSqr(pos2) + distance) < Math.pow(band, 8);
+                double distance = Math.sqrt(bp1.distSqr(bp2)) * CROSS_DIMENSION_MULTIPLIER;
+                return Math.sqrt(pos1.distSqr(pos2)) + distance;
             }
         }
-        return false;
+        return Double.MAX_VALUE;
     }
 
     /**
@@ -166,9 +172,10 @@ public class RadioSpec {
                                            boolean shouldSubscribe, List<String> passphrases) {
         String receiverDimString = receiverLevel.dimension().location().toString();
 
-        List<String> messages = new ArrayList<>();
+        List<RadioSignal> messages = new ArrayList<>();
 
         for (RadioTransmitterModel transmitter : storage.getTransmitters()) {
+            double distance = getRadioDistance(receiverDimString, receiverPos, transmitter.getDimension(), transmitter.getPos(), band);
             // Check if on same band and in range
             if (transmitter.getBand() == band &&
                 inRadioDistance(receiverDimString, receiverPos,
@@ -182,7 +189,7 @@ public class RadioSpec {
                 String passphrase = transmitter.getPassphrase();
                 if (passphrase.isEmpty() || passphrases.contains(passphrase)) {
                     // Message is receivable
-                    messages.add(transmitter.getMessage());
+                    messages.add(new RadioSignal(transmitter.getMessage(), getSignalStrength(band, distance)));
 
                     // Subscribe if requested
                     if (shouldSubscribe) {
@@ -191,12 +198,29 @@ public class RadioSpec {
                     }
                 } else {
                     // Wrong passphrase
-                    messages.add("[You receive an incomprehensible signal]");
+                    messages.add(RadioSignal.scrambled(transmitter.getMessage(), getSignalStrength(band, distance)));
                 }
             }
         }
 
-        return messages.stream().map(message -> new RadioSignal(message, 1.0)).toList(); //TODO implement proper signal strength calculation
+        return messages;
+    }
+
+
+    public static double getMaxRangeForClearSignal(int band) {
+        return 50 * Math.pow(2, band / 5.0);
+    }
+
+    public static double getMaxRangeForAnySignal(int band) {
+        return getMaxRangeForClearSignal(band) * 2;
+    }
+
+    public static double getSignalStrength(int band, double distance) {
+        double maxA = getMaxRangeForClearSignal(band);
+        if (distance <= maxA) return 1.0;
+        double excess = distance - maxA;
+        double excessAllowance = getMaxRangeForAnySignal(band) - maxA;
+        return Mth.clamp(1.0 - (excess / excessAllowance), 0.0, 1.0);
     }
 
     /**
