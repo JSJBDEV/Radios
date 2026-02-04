@@ -1,8 +1,8 @@
 package ace.actually.radios.blocks;
 
-import ace.actually.radios.ISubscriberRadio;
-import ace.actually.radios.RadioSignal;
-import ace.actually.radios.RadioSpec;
+import ace.actually.radios.api.ISubscriberRadio;
+import ace.actually.radios.api.RadioSignal;
+import ace.actually.radios.api.RadioSpec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;

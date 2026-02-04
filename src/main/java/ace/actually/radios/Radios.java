@@ -1,11 +1,10 @@
 package ace.actually.radios;
 
+import ace.actually.radios.api.RadioSpec;
 import ace.actually.radios.blocks.Band5RadioBlock;
+import ace.actually.radios.impl.RadioStorageImpl;
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -56,6 +55,8 @@ public class Radios
 
         // Register the item to a creative tab
         modEventBus.addListener(this::addCreative);
+
+        RadioSpec.initialize(new RadioStorageImpl());
     }
 
 

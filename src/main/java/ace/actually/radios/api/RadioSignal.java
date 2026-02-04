@@ -1,4 +1,4 @@
-package ace.actually.radios;
+package ace.actually.radios.api;
 
 /// @param message  the message
 /// @param strength from 0.0 to 1.0, how clear is the signal

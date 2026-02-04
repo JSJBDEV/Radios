@@ -1,0 +1,162 @@
+package ace.actually.radios.impl;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Persistence coordinator between Minecraft storage and domain models.
+ * Owns all interaction with MinecraftServer and CommandStorage.
+ * Delegates per-object serialization to model classes.
+ */
+@Mod.EventBusSubscriber
+public class RadioStorageImpl implements RadioStorage {
+    private static final ResourceLocation RADIO_SAVE = ResourceLocation.fromNamespaceAndPath("radios", "radios");
+
+    private final List<RadioTransmitterModel> transmitters;
+    private final Map<String, BlockPos> dimensionLocations;
+
+    // Don't require MinecraftServer as method argument in save/load so that we can test RadioSpec without a server available
+    private static @Nullable MinecraftServer server = null;
+    private static final Logger LOGGER = LoggerFactory.getLogger("Radio Storage");
+
+    public RadioStorageImpl() {
+        this.transmitters = new ArrayList<>();
+        this.dimensionLocations = new HashMap<>();
+    }
+
+    @SubscribeEvent
+    public static void onServerStarting(ServerStartingEvent event) {
+        server = event.getServer();
+    }
+
+    @SubscribeEvent
+    public static void onServerStoppedEvent(ServerStoppedEvent event) {
+        server = null;
+    }
+
+    /**
+     * Load radio data from server storage
+     */
+    public void load() {
+        final MinecraftServer nonNullServer = server;
+        if (nonNullServer == null) {
+            LOGGER.warn("tried to load radios while server is null");
+            return;
+        }
+        CompoundTag savedRadios = nonNullServer.getCommandStorage().get(RADIO_SAVE);
+
+        // Load transmitters
+        ListTag radiosList = savedRadios.getList("radios", ListTag.TAG_COMPOUND);
+        transmitters.clear();
+        for (int i = 0; i < radiosList.size(); i++) {
+            CompoundTag radioTag = radiosList.getCompound(i);
+            transmitters.add(RadioTransmitterModel.fromNBT(radioTag));
+        }
+
+        // Load dimension locations
+        CompoundTag dimensionsTag = savedRadios.getCompound("dimensions");
+        dimensionLocations.clear();
+        for (String key : dimensionsTag.getAllKeys()) {
+            int[] posArray = dimensionsTag.getIntArray(key);
+            dimensionLocations.put(key, new BlockPos(posArray[0], posArray[1], posArray[2]));
+        }
+    }
+
+    /**
+     * Save radio data to server storage
+     */
+    public void save() {
+        final MinecraftServer nonNullServer = server;
+        if (nonNullServer == null) {
+            LOGGER.warn("tried to save radios while server is null");
+            return;
+        }
+        CompoundTag savedRadios = new CompoundTag();
+
+        // Save transmitters
+        ListTag radiosList = new ListTag();
+        for (RadioTransmitterModel transmitter : transmitters) {
+            radiosList.add(transmitter.toNBT());
+        }
+        savedRadios.put("radios", radiosList);
+
+        // Save dimension locations
+        CompoundTag dimensionsTag = new CompoundTag();
+        for (Map.Entry<String, BlockPos> entry : dimensionLocations.entrySet()) {
+            BlockPos pos = entry.getValue();
+            dimensionsTag.putIntArray(entry.getKey(), new int[]{pos.getX(), pos.getY(), pos.getZ()});
+        }
+        savedRadios.put("dimensions", dimensionsTag);
+
+        nonNullServer.getCommandStorage().set(RADIO_SAVE, savedRadios);
+    }
+
+    /**
+     * Get all transmitters
+     */
+    public List<RadioTransmitterModel> getTransmitters() {
+        return transmitters;
+    }
+
+    /**
+     * Find a transmitter at a specific location, or null if not found
+     */
+    public RadioTransmitterModel findTransmitterAt(String dimension, BlockPos pos) {
+        for (RadioTransmitterModel transmitter : transmitters) {
+            if (transmitter.matches(dimension, pos)) {
+                return transmitter;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Add a new transmitter
+     */
+    public void addTransmitter(RadioTransmitterModel transmitter) {
+        transmitters.add(transmitter);
+    }
+
+    /**
+     * Get dimension location, or null if not registered
+     */
+    public BlockPos getDimensionLocation(String dimension) {
+        return dimensionLocations.get(dimension);
+    }
+
+    /**
+     * Get all dimension locations
+     */
+    public Map<String, BlockPos> getDimensionLocations() {
+        return dimensionLocations;
+    }
+
+    /**
+     * Set a dimension's physical location
+     */
+    public void setDimensionLocation(String dimension, BlockPos pos) {
+        dimensionLocations.put(dimension, pos);
+    }
+
+    /**
+     * Check if a dimension location is registered
+     */
+    public boolean hasDimensionLocation(String dimension) {
+        return dimensionLocations.containsKey(dimension);
+    }
+}
