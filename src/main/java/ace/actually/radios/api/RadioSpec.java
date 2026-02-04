@@ -1,15 +1,18 @@
 package ace.actually.radios.api;
 
+import ace.actually.radios.compat.Compat;
 import ace.actually.radios.impl.RadioReceiverModel;
 import ace.actually.radios.impl.RadioStorage;
 import ace.actually.radios.impl.RadioTransmitterModel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -175,11 +178,14 @@ public class RadioSpec {
         List<RadioSignal> messages = new ArrayList<>();
 
         for (RadioTransmitterModel transmitter : storage.getTransmitters()) {
-            double distance = getRadioDistance(receiverDimString, receiverPos, transmitter.getDimension(), transmitter.getPos(), band);
+            BlockPos receiverPosWorld = Compat.toWorldPos(receiverLevel, receiverPos);
+            ServerLevel transmitterLevel = receiverLevel.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(transmitter.getDimension())));
+            if (transmitterLevel == null) continue;
+            BlockPos transmitterPosWorld = Compat.toWorldPos(transmitterLevel, transmitter.getPos());
+
+            double distance = getRadioDistance(receiverDimString, receiverPosWorld, transmitter.getDimension(), transmitterPosWorld, band);
             // Check if on same band and in range
-            if (transmitter.getBand() == band &&
-                inRadioDistance(receiverDimString, receiverPos,
-                              transmitter.getDimension(), transmitter.getPos(), band)) {
+            if (transmitter.getBand() == band && distance <= getMaxRangeForAnySignal(band)) {
 
                 // Skip blank messages
                 if (transmitter.getMessage().isBlank()) {

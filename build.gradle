@@ -120,6 +120,21 @@ repositories {
     // flatDir {
     //     dir 'libs'
     // }
+
+
+
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
+
+    maven {
+        name = "Valkyrien Skies Internal"
+        url = 'https://maven.valkyrienskies.org'
+        content {
+            includeGroupByRegex "org.valkyrien.*"
+        }
+    }
 }
 
 dependencies {
@@ -129,6 +144,9 @@ dependencies {
     // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    compileOnly ("org.valkyrienskies.core:api:1.1.0+b714ef303e") {transitive = false}
+    compileOnly fg.deobf("maven.modrinth:valkyrien-skies:1.20.1-forge-2.4.10")
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
