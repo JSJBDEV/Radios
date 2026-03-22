@@ -17,8 +17,8 @@ Bands are explained as such:
 - There are 100 bands of communication
 - lower bands require less power to transmit and less complex machinery to receive
 - higher bands can be received from a lot further away
-- band 1 can be received 8 blocks away, and each successive band multiplies this distance by 8
-- every quarter of the max distance, information becomes fainter/decays
+- band 0 has a clear signal range of 50 blocks; this doubles every 5 bands (e.g. band 5 = 100 blocks, band 10 = 200 blocks)
+- signal is perfectly clear up to the band's base range, then fades linearly to nothing at twice that distance
 - distances are calculated across dimensions (when the dimension has a registered physical location)
 
 Radios could be used for:
