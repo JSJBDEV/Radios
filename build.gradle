@@ -19,6 +19,18 @@ sourceSets.main.resources {
 }
 
 repositories {
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
+
+    maven {
+        name = "Valkyrien Skies Internal"
+        url = 'https://maven.valkyrienskies.org'
+        content {
+            includeGroupByRegex "org.valkyrien.*"
+        }
+    }
 }
 
 runs {
@@ -54,6 +66,9 @@ configurations {
 
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
+
+    compileOnly ("org.valkyrienskies.core:api:1.1.0+b714ef303e") {transitive = false}
+    compileOnlyApi ("maven.modrinth:valkyrien-skies:1.20.1-forge-2.4.10")
 }
 
 tasks.withType(ProcessResources).configureEach {

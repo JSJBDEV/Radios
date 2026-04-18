@@ -1,5 +1,6 @@
 package ace.actually.radios.api;
 
+import ace.actually.radios.compat.Compat;
 import ace.actually.radios.impl.RadioReceiverModel;
 import ace.actually.radios.impl.RadioStorage;
 import ace.actually.radios.impl.RadioTransmitterModel;
@@ -175,9 +176,12 @@ public class RadioSpec {
         List<RadioSignal> messages = new ArrayList<>();
 
         for (RadioTransmitterModel transmitter : storage.getTransmitters()) {
+            BlockPos receiverPosWorld = Compat.toWorldPos(receiverLevel, receiverPos);
             ServerLevel transmitterLevel = receiverLevel.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(transmitter.getDimension())));
             if (transmitterLevel == null) continue;
-            double distance = getRadioDistance(receiverDimString, receiverPos, transmitter.getDimension(), transmitter.getPos(), band);
+            BlockPos transmitterPosWorld = Compat.toWorldPos(transmitterLevel, transmitter.getPos());
+
+            double distance = getRadioDistance(receiverDimString, receiverPosWorld, transmitter.getDimension(), transmitterPosWorld, band);
             // Check if on same band and in range
             if (transmitter.getBand() == band && distance <= getMaxRangeForAnySignal(band)) {
 
