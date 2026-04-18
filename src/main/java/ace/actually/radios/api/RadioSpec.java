@@ -172,11 +172,11 @@ public class RadioSpec {
     public static List<RadioSignal> receive(ServerLevel receiverLevel, BlockPos receiverPos, int band,
                                            boolean shouldSubscribe, List<String> passphrases) {
         String receiverDimString = receiverLevel.dimension().location().toString();
+        BlockPos receiverPosWorld = Compat.toWorldPos(receiverLevel, receiverPos);
 
         List<RadioSignal> messages = new ArrayList<>();
 
         for (RadioTransmitterModel transmitter : storage.getTransmitters()) {
-            BlockPos receiverPosWorld = Compat.toWorldPos(receiverLevel, receiverPos);
             ServerLevel transmitterLevel = receiverLevel.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(transmitter.getDimension())));
             if (transmitterLevel == null) continue;
             BlockPos transmitterPosWorld = Compat.toWorldPos(transmitterLevel, transmitter.getPos());
